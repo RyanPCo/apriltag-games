@@ -32,6 +32,7 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 while True:
     ret, frame = cap.read() # reads camera frame
     if not ret:
+        print("Error: Could not read from webcam. Exiting.")
         break
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # converts to grayscale to detect tag
@@ -90,7 +91,28 @@ while True:
         cv2.putText(frame, "GAME OVER", (180, 240), font, 2, (0, 0, 255), 5)
         cv2.imshow('AprilTag Detection', frame)
         cv2.waitKey(2000)
-        break
+        # Show final score and prompt for restart or quit
+        while True:
+            frame_copy = frame.copy()
+            cv2.putText(frame_copy, f"Final Score: {score}", (180, 300), font, 1.2, (255, 255, 255), 3)
+            cv2.putText(frame_copy, "Press 'r' to restart or 'q' to quit", (60, 400), font, 0.8, (255, 255, 0), 2)
+            cv2.imshow('AprilTag Detection', frame_copy)
+            key = cv2.waitKey(0) & 0xFF
+            if key == ord('q'):
+                cap.release()
+                cv2.destroyAllWindows()
+                exit()
+            elif key == ord('r'):
+                # Reset game state
+                pipes = []
+                for i in range(NUM_PIPES):
+                    x = 640 + i * PIPE_SPACING
+                    gap_y = random.randint(100, 380)
+                    pipes.append([x, gap_y, False])
+                circle_pos = [bird_x, frame_height // 2]
+                score = 0
+                break
+        continue
 
     cv2.imshow('AprilTag Detection', frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -98,3 +120,7 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
+
+# Add a main guard for best practice
+if __name__ == "__main__":
+    pass  # The game runs on import, but this is a placeholder for future modularization
